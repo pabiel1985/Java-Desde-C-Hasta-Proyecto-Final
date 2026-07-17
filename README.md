@@ -1,4 +1,4 @@
-\# ☕ Java Desde C hasta Proyecto Final
+\## ☕ Java Desde C hasta Proyecto Final
 
 
 
@@ -280,7 +280,6 @@ Tema
 
 \*\*Pablo Orellano\*\*
 
-## Prueba de la rama practica-ramas
 
 Técnico Electromecánico | Programador PLC | Estudiante de Programación
 
