@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public class Main {
 	public static void main(String[] args) {
 		int edad = 41;
@@ -16,5 +18,13 @@ public class Main {
 		System.out.println(nombre);
 		System.out.println(nombre.toUpperCase());
 		System.out.println(nombre.length());
+		System.out.print("Ingrese su edad: ");
+		Scanner teclado = new Scanner(System.in);
+		edad = teclado.nextInt();
+		System.out.println(edad);
+		System.out.print("ingrese nueva altura: ");
+		altura = teclado.nextDouble();
+		System.out.println(altura);
+
 	}
 }
