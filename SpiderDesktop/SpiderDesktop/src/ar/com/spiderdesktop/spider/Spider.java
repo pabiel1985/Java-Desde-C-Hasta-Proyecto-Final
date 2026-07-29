@@ -1,32 +1,70 @@
 package ar.com.spiderdesktop.spider;
 
+import ar.com.spiderdesktop.home.SpiderHome;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Spider {
 
+	// ==============================
+	// Apariencia
+	// ==============================
+
 	private Image imagen;
 	private ImageView vista;
+
+	// ==============================
+	// Posición
+	// ==============================
 
 	private double x;
 	private double y;
 
+	// ==============================
+	// Destino
+	// ==============================
+
 	private double objetivoX;
 	private double objetivoY;
 
+	// ==============================
 	// Movimiento
+	// ==============================
+
 	private double velocidadActual = 0;
-	private double velocidadMaxima = 5;
+	private double velocidadMaxima = 3;
 	private double aceleracion = 0.20;
-	private EstadoSpider estado = EstadoSpider.DESCANSANDO;
+
+	// ==============================
+	// Animación
+	// ==============================
+
 	private double oscilacion = 0;
 
-	public Spider(double x, double y) {
+	// ==============================
+	// Estado
+	// ==============================
+
+	private EstadoSpider estado = EstadoSpider.DESCANSANDO;
+
+	// ==============================
+	// Casa
+	// ==============================
+
+	private SpiderHome casa;
+
+	// ==============================
+	// Constructor
+	// ==============================
+
+	public Spider(double x, double y, SpiderHome casa) {
+
+		this.casa = casa;
 
 		imagen = new Image(getClass().getResourceAsStream("/images/spider.png"));
 		vista = new ImageView(imagen);
 
-		vista.setFitWidth(200);
+		vista.setFitWidth(100);
 		vista.setPreserveRatio(true);
 
 		moverA(x, y);
@@ -35,8 +73,50 @@ public class Spider {
 		objetivoY = y;
 	}
 
+	// ==============================
+	// Getters
+	// ==============================
+
 	public ImageView getVista() {
 		return vista;
+	}
+
+	public EstadoSpider getEstado() {
+		return estado;
+	}
+
+	public SpiderHome getCasa() {
+		return casa;
+	}
+
+	// ==============================
+	// Estados
+	// ==============================
+
+	public void caminar() {
+		estado = EstadoSpider.CAMINANDO;
+	}
+
+	public void descansar() {
+		estado = EstadoSpider.DESCANSANDO;
+	}
+
+	public void observar() {
+		estado = EstadoSpider.OBSERVANDO;
+	}
+
+	public void perseguir() {
+		estado = EstadoSpider.PERSIGUIENDO;
+	}
+	// ==============================
+	// Movimiento
+	// ==============================
+
+	public void moverHacia(double x, double y) {
+
+		objetivoX = x;
+		objetivoY = y;
+
 	}
 
 	public void moverA(double x, double y) {
@@ -46,32 +126,39 @@ public class Spider {
 
 		vista.setLayoutX(this.x);
 		vista.setLayoutY(this.y);
-	}
-
-	public void moverHacia(double x, double y) {
-
-		objetivoX = x;
-		objetivoY = y;
-
-		estado = EstadoSpider.CAMINANDO;
 
 	}
+
+	// ==============================
+	// Actualización
+	// ==============================
 
 	public void actualizar() {
 
 		switch (estado) {
 
-		case DESCANSANDO:
-			break;
+	    case CAMINANDO:
+	        actualizarMovimiento();
+	        break;
 
-		case CAMINANDO:
-			caminar();
-			break;
-		}
+	    case PERSIGUIENDO:
+	        actualizarMovimiento();
+	        break;
+
+	    case DESCANSANDO:
+	        break;
+
+	    case OBSERVANDO:
+	        break;
+	}
 
 	}
 
-	private void caminar() {
+	// ==============================
+	// Movimiento interno
+	// ==============================
+
+	private void actualizarMovimiento() {
 
 		double dx = objetivoX - x;
 		double dy = objetivoY - y;
@@ -80,13 +167,13 @@ public class Spider {
 
 		if (distancia <= velocidadActual) {
 
-		    moverA(objetivoX, objetivoY);
+			moverA(objetivoX, objetivoY);
 
-		    velocidadActual = 0;
+			velocidadActual = 0;
+			oscilacion = 0;
 
-		    oscilacion = 0;
+			return;
 
-		    return;
 		}
 
 		if (velocidadActual < velocidadMaxima) {
@@ -96,6 +183,7 @@ public class Spider {
 			if (velocidadActual > velocidadMaxima) {
 				velocidadActual = velocidadMaxima;
 			}
+
 		}
 
 		double direccionX = dx / distancia;
@@ -106,26 +194,31 @@ public class Spider {
 
 		double angulo = Math.toDegrees(Math.atan2(dy, dx));
 
-		oscilacion += 0.30;
+		oscilacion += 0.90;
 
 		double balanceo = Math.sin(oscilacion) * 4;
 
 		vista.setRotate(angulo - 90 + balanceo);
+
 		moverA(x, y);
+
 	}
+
+	// ==============================
+	// Consultas
+	// ==============================
 
 	public boolean llegoAlObjetivo() {
 
-		return x == objetivoX && y == objetivoY;
+		double dx = objetivoX - x;
+		double dy = objetivoY - y;
+
+		return Math.sqrt(dx * dx + dy * dy) < 1;
 
 	}
 
-	public EstadoSpider getEstado() {
-		return estado;
-	}
-
-	public void setEstado(EstadoSpider estado) {
-		this.estado = estado;
+	public boolean estaDescansando() {
+		return estado == EstadoSpider.DESCANSANDO;
 	}
 
 }
