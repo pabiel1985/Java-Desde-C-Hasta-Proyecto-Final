@@ -8,237 +8,290 @@ import ar.com.spiderdesktop.world.World;
 
 public class CerebroSpider {
 
-    // ===============================
-    // Constantes del mundo
-    // ===============================
+	private long ultimaMosca = 0;
 
-    private static final int ANCHO = 800;
-    private static final int ALTO = 600;
-    private static final int MARGEN = 20;
+	private static final int TIEMPO_REAPARICION = 10000;
 
-    private static final int TIEMPO_DESCANSO = 3000;
-    private static final int TIEMPO_OBSERVACION = 1000;
+	// ===============================
+	// Constantes del mundo
+	// ===============================
 
-    private static final double RADIO_VISION = 250;
+	private static final int ANCHO = 800;
+	private static final int ALTO = 600;
+	private static final int MARGEN = 20;
 
-    // ===============================
-    // Objetos
-    // ===============================
+	private static final int TIEMPO_DESCANSO = 3000;
+	private static final int TIEMPO_OBSERVACION = 1000;
 
-    private final Spider spider;
-    private final World mundo;
-    private final Random random = new Random();
+	private static final double RADIO_VISION = 250;
 
-    // ===============================
-    // Temporizadores
-    // ===============================
+	// ===============================
+	// Objetos
+	// ===============================
 
-    private long inicioDescanso = 0;
-    private long inicioObservacion = 0;
+	private final Spider spider;
+	private final World mundo;
+	private final Random random = new Random();
 
-    // ===============================
-    // Constructor
-    // ===============================
+	// ===============================
+	// Temporizadores
+	// ===============================
 
-    public CerebroSpider(Spider spider, World mundo) {
+	private long inicioDescanso = 0;
+	private long inicioObservacion = 0;
 
-        this.spider = spider;
-        this.mundo = mundo;
+	// ===============================
+	// Constructor
+	// ===============================
 
-    }
+	public CerebroSpider(Spider spider, World mundo) {
 
-    // ===============================
-    // Actualización principal
-    // ===============================
+		this.spider = spider;
+		this.mundo = mundo;
 
-    public void actualizar() {
+	}
 
-        // Primero se mueve el cuerpo
-        spider.actualizar();
+	// ===============================
+	// Actualización principal
+	// ===============================
 
-        // Después piensa
-        switch (spider.getEstado()) {
+	public void actualizar() {
 
-        case CAMINANDO:
-            actualizarCaminar();
-            break;
+		// Primero se mueve el cuerpo
+		spider.actualizar();
 
-        case PERSIGUIENDO:
-            actualizarPersiguiendo();
-            break;
+		reaparecerMoscas();
 
-        case OBSERVANDO:
-            actualizarObservacion();
-            break;
+		// Después piensa
+		switch (spider.getEstado()) {
 
-        case DESCANSANDO:
-            actualizarDescanso();
-            break;
+		case CAMINANDO:
+			actualizarCaminar();
+			break;
 
-        }
+		case PERSIGUIENDO:
+			actualizarPersiguiendo();
+			break;
 
-    }
+		case OBSERVANDO:
+			actualizarObservacion();
+			break;
 
-    // ===============================
-    // CAMINANDO
-    // ===============================
+		case DESCANSANDO:
+			actualizarDescanso();
+			break;
 
-    private void actualizarCaminar() {
+		}
 
-        if (spider.llegoAlObjetivo()) {
+	}
 
-            spider.observar();
-            inicioObservacion = System.currentTimeMillis();
+	// ===============================
+	// CAMINANDO
+	// ===============================
 
-        }
+	private void actualizarCaminar() {
 
-    }
+		if (spider.llegoAlObjetivo()) {
 
-    // ===============================
-    // PERSIGUIENDO
-    // ===============================
+			spider.observar();
+			inicioObservacion = System.currentTimeMillis();
 
-    private void actualizarPersiguiendo() {
+		}
 
-        Fly mosca = buscarMoscaMasCercana();
+	}
 
-        if (mosca == null) {
+	// ===============================
+	// PERSIGUIENDO
+	// ===============================
 
-            spider.descansar();
-            inicioDescanso = System.currentTimeMillis();
-            return;
+	private void actualizarPersiguiendo() {
 
-        }
+		Fly mosca = buscarMoscaMasCercana();
 
-        // La mosca se mueve, por eso actualizamos
-        // el objetivo continuamente.
-        spider.moverHacia(mosca.getX(), mosca.getY());
+		if (mosca == null) {
 
-        if (spider.llegoAlObjetivo()) {
+			spider.descansar();
+			inicioDescanso = System.currentTimeMillis();
+			return;
 
-            // Más adelante aquí atrapará la mosca.
-            spider.observar();
-            inicioObservacion = System.currentTimeMillis();
+		}
 
-        }
+		// La mosca se mueve, por eso actualizamos
+		// el objetivo continuamente.
+		spider.moverHacia(mosca.getX(), mosca.getY());
 
-    }
+		if (spider.llegoAlObjetivo()) {
 
-    // ===============================
-    // OBSERVANDO
-    // ===============================
+		    mosca.morir();
 
-    private void actualizarObservacion() {
+		    ultimaMosca = System.currentTimeMillis();
 
-        long ahora = System.currentTimeMillis();
+		    spider.observar();
 
-        if (ahora - inicioObservacion >= TIEMPO_OBSERVACION) {
+		    inicioObservacion = System.currentTimeMillis();
 
-            spider.descansar();
-            inicioDescanso = System.currentTimeMillis();
+		}
 
-        }
+	}
 
-    }
+	// ===============================
+	// OBSERVANDO
+	// ===============================
 
-    // ===============================
-    // DESCANSANDO
-    // ===============================
+	private void actualizarObservacion() {
 
-    private void actualizarDescanso() {
+		long ahora = System.currentTimeMillis();
 
-        Fly mosca = buscarMoscaMasCercana();
+		if (ahora - inicioObservacion >= TIEMPO_OBSERVACION) {
 
-        if (mosca != null) {
+			spider.descansar();
+			inicioDescanso = System.currentTimeMillis();
 
-            spider.moverHacia(mosca.getX(), mosca.getY());
-            spider.perseguir();
+		}
 
-            return;
+	}
 
-        }
+	// ===============================
+	// DESCANSANDO
+	// ===============================
 
-        long ahora = System.currentTimeMillis();
+	private void actualizarDescanso() {
 
-        if (ahora - inicioDescanso >= TIEMPO_DESCANSO) {
+		Fly mosca = buscarMoscaMasCercana();
 
-            elegirDestinoBorde();
+		if (mosca != null) {
 
-        }
+			spider.moverHacia(mosca.getX(), mosca.getY());
+			spider.perseguir();
 
-    }
+			return;
 
-    // ===============================
-    // Elegir destino
-    // ===============================
+		}
 
-    private void elegirDestinoBorde() {
+		long ahora = System.currentTimeMillis();
 
-        int lado = random.nextInt(4);
+		if (ahora - inicioDescanso >= TIEMPO_DESCANSO) {
 
-        double x = 0;
-        double y = 0;
+			elegirDestinoBorde();
 
-        switch (lado) {
+		}
 
-        case 0: // Arriba
-            x = random.nextInt(ANCHO - (MARGEN * 2)) + MARGEN;
-            y = MARGEN;
-            break;
+	}
 
-        case 1: // Derecha
-            x = ANCHO - MARGEN;
-            y = random.nextInt(ALTO - (MARGEN * 2)) + MARGEN;
-            break;
+	// ===============================
+	// Elegir destino
+	// ===============================
 
-        case 2: // Abajo
-            x = random.nextInt(ANCHO - (MARGEN * 2)) + MARGEN;
-            y = ALTO - MARGEN;
-            break;
+	private void elegirDestinoBorde() {
 
-        case 3: // Izquierda
-            x = MARGEN;
-            y = random.nextInt(ALTO - (MARGEN * 2)) + MARGEN;
-            break;
+		int lado = random.nextInt(4);
 
-        }
+		double x = 0;
+		double y = 0;
 
-        spider.moverHacia(x, y);
-        spider.caminar();
+		switch (lado) {
 
-    }
+		case 0: // Arriba
+			x = random.nextInt(ANCHO - (MARGEN * 2)) + MARGEN;
+			y = MARGEN;
+			break;
 
-    // ===============================
-    // Buscar la mosca más cercana
-    // ===============================
+		case 1: // Derecha
+			x = ANCHO - MARGEN;
+			y = random.nextInt(ALTO - (MARGEN * 2)) + MARGEN;
+			break;
 
-    private Fly buscarMoscaMasCercana() {
+		case 2: // Abajo
+			x = random.nextInt(ANCHO - (MARGEN * 2)) + MARGEN;
+			y = ALTO - MARGEN;
+			break;
 
-        Fly mejor = null;
-        double menorDistancia = Double.MAX_VALUE;
+		case 3: // Izquierda
+			x = MARGEN;
+			y = random.nextInt(ALTO - (MARGEN * 2)) + MARGEN;
+			break;
 
-        double spiderX = spider.getVista().getLayoutX();
-        double spiderY = spider.getVista().getLayoutY();
+		}
 
-        for (Fly mosca : mundo.getMoscas()) {
+		spider.moverHacia(x, y);
+		spider.caminar();
 
-            double dx = mosca.getX() - spiderX;
-            double dy = mosca.getY() - spiderY;
+	}
 
-            double distancia = Math.sqrt(dx * dx + dy * dy);
+	// ===============================
+	// Buscar la mosca más cercana
+	// ===============================
 
-            // Solo ve las moscas cercanas
-            if (distancia <= RADIO_VISION && distancia < menorDistancia) {
+	private Fly buscarMoscaMasCercana() {
 
-                menorDistancia = distancia;
-                mejor = mosca;
+		Fly mejor = null;
+		double menorDistancia = Double.MAX_VALUE;
 
-            }
+		double spiderX = spider.getVista().getLayoutX();
+		double spiderY = spider.getVista().getLayoutY();
 
-        }
+		for (Fly mosca : mundo.getMoscas()) {
 
-        return mejor;
+			if (!mosca.estaViva()) {
+				continue;
+			}
 
-    }
+			double dx = mosca.getX() - spiderX;
+			double dy = mosca.getY() - spiderY;
+
+			double distancia = Math.sqrt(dx * dx + dy * dy);
+
+			// Solo ve las moscas cercanas
+			if (distancia <= RADIO_VISION && distancia < menorDistancia) {
+
+				menorDistancia = distancia;
+				mejor = mosca;
+
+			}
+
+		}
+
+		return mejor;
+
+	}
+
+	private void reaparecerMoscas() {
+
+		long ahora = System.currentTimeMillis();
+
+		boolean hayMoscaViva = false;
+
+		for (Fly mosca : mundo.getMoscas()) {
+
+			if (mosca.estaViva()) {
+
+				hayMoscaViva = true;
+				break;
+
+			}
+
+		}
+
+		if (!hayMoscaViva && ahora - ultimaMosca >= TIEMPO_REAPARICION) {
+
+			mundo.revivirMosca();
+
+			ultimaMosca = ahora;
+
+		}
+
+	}
+
+	public double getTiempoReaparicion() {
+
+		long restante = TIEMPO_REAPARICION - (System.currentTimeMillis() - ultimaMosca);
+
+		if (restante < 0) {
+			restante = 0;
+		}
+
+		return restante / 1000.0;
+
+	}
 
 }

@@ -1,6 +1,7 @@
 package ar.com.spiderdesktop;
 
 import ar.com.spiderdesktop.world.Fly;
+import ar.com.spiderdesktop.debug.DebugPanel;
 import ar.com.spiderdesktop.home.SpiderHome;
 import ar.com.spiderdesktop.ia.CerebroSpider;
 import ar.com.spiderdesktop.spider.Spider;
@@ -28,12 +29,10 @@ public class Main extends Application {
 
 		// Casa de la araña
 		SpiderHome casa = new SpiderHome(730, 40);
-		
+
 		World mundo = new World();
 
-		Fly mosca = new Fly(400,300);
-
-		mundo.agregarMosca(mosca);
+		Fly mosca = mundo.crearMoscaAleatoria();
 
 		// Araña
 		Spider arania = new Spider(x, y, casa);
@@ -50,6 +49,10 @@ public class Main extends Application {
 		// Escena
 		Scene escena = new Scene(raiz, 800, 600);
 
+		DebugPanel debug = new DebugPanel();
+
+		raiz.getChildren().add(debug.getVista());
+
 		// El mouse indica el objetivo
 		escena.setOnMouseMoved(evento -> {
 			arania.moverHacia(evento.getX(), evento.getY());
@@ -60,9 +63,11 @@ public class Main extends Application {
 
 				new KeyFrame(Duration.millis(16), evento -> {
 
-					cerebro.actualizar();
-					mosca.actualizar();
+					mundo.actualizar();
 
+					cerebro.actualizar();
+
+					debug.actualizar(arania.getEstado().toString(), mosca.estaViva(), cerebro.getTiempoReaparicion());
 				})
 
 		);
