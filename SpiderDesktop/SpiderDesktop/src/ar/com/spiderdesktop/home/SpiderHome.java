@@ -2,6 +2,7 @@ package ar.com.spiderdesktop.home;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.Screen;
 
 public class SpiderHome {
 
@@ -20,11 +21,16 @@ public class SpiderHome {
 
         vista = new ImageView(imagen);
 
-        vista.setFitWidth(140);
-        vista.setPreserveRatio(true);
+        // Escalar la imagen para cubrir la pantalla
+        double screenW = Screen.getPrimary().getBounds().getWidth();
+        double screenH = Screen.getPrimary().getBounds().getHeight();
 
-        vista.setLayoutX(x);
-        vista.setLayoutY(y);
+        vista.setFitWidth(screenW);
+        vista.setFitHeight(screenH);
+        vista.setPreserveRatio(false); // cambiar a true si preferís mantener la proporción
+
+        vista.setLayoutX(0);
+        vista.setLayoutY(0);
 
         vista.setOpacity(0.15);
 

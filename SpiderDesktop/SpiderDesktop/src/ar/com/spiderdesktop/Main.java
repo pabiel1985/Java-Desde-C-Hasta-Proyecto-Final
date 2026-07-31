@@ -11,7 +11,9 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class Main extends Application {
@@ -25,7 +27,8 @@ public class Main extends Application {
 
 		// Panel principal
 		Pane raiz = new Pane();
-		raiz.setStyle("-fx-background-color: grey;");
+		// Hacemos el fondo del root transparente (la escena y el stage también serán transparentes)
+		raiz.setStyle("-fx-background-color: transparent;");
 
 		// Casa de la araña
 		SpiderHome casa = new SpiderHome(730, 40);
@@ -48,6 +51,8 @@ public class Main extends Application {
 		raiz.getChildren().add(mosca.getVista());
 		// Escena
 		Scene escena = new Scene(raiz, 800, 600);
+		// Hacemos la escena transparente
+		escena.setFill(Color.TRANSPARENT);
 
 		DebugPanel debug = new DebugPanel();
 
@@ -68,6 +73,7 @@ public class Main extends Application {
 					cerebro.actualizar();
 
 					debug.actualizar(arania.getEstado().toString(), mosca.estaViva(), cerebro.getTiempoReaparicion());
+				
 				})
 
 		);
@@ -76,7 +82,11 @@ public class Main extends Application {
 		reloj.play();
 
 		ventana.setTitle("Spider Desktop");
+		// Quitamos las decoraciones y hacemos transparente el stage
+		ventana.initStyle(StageStyle.TRANSPARENT);
 		ventana.setScene(escena);
+		// Ocupamos la pantalla (maximizado). Si preferís pantalla completa, reemplazar por setFullScreen(true).
+		ventana.setMaximized(true);
 		ventana.show();
 	}
 
